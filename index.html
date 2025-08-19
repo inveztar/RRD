@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง (v2.8)</title>
+<title>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง (v2.9)</title>
 <style>
   /* ---------------------------------------------------------
-     แพทหลังบ้าน (Patch Notes) - v2.8
-     - แก้ปัญหา Layout 'เด้ง' โดยการล็อคความสูงขั้นต่ำของกล่อง Score Cards
+     แพทหลังบ้าน (Patch Notes) - v2.9
+     - แก้ไข Bug ฟังก์ชันปิดไมค์อัตโนมัติเมื่อพักแอป ให้ทำงานได้อย่างสมบูรณ์
      --------------------------------------------------------- */
 
   :root{
@@ -35,6 +35,7 @@
   .subtle{color:var(--muted)}
   .btn{background:#1f2937; color:#e5e7eb; border:1px solid #334155; padding:8px 12px; border-radius:8px; cursor:pointer}
   .btn:hover{background:#223049}
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
   .btn.alt{background:#0ea5e9; border-color:#0284c7; color:#06233a}
   .btn.ghost{background:transparent}
   .grid-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
@@ -84,7 +85,6 @@
   .title-tag.warn { background: var(--warn); color: #422006; }
   .title-tag.normal { background: #0e223d; color: #9ec3ff; }
   
-  /* *** NEW: Lock score cards container height to prevent layout shift *** */
   #scoreCards {
     min-height: 135px;
   }
@@ -93,7 +93,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง <span class="pill">v2.8</span></h1>
+    <h1>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง <span class="pill">v2.9</span></h1>
 
     <!-- Controls -->
     <div class="panel row cols-2">
@@ -101,7 +101,7 @@
         <div class="title">ควบคุม</div>
         <div class="row grid-3">
           <button class="btn alt" id="btnStart">เริ่มวัด</button>
-          <button class="btn" id="btnStop">หยุด</button>
+          <button class="btn" id="btnStop" disabled>หยุด</button>
           <button class="btn" id="btnClear">Clear สถิติ</button>
         </div>
 
@@ -196,10 +196,10 @@
     <div class="panel panel-2" style="margin-top:12px">
       <div class="title">บันทึกการปรับปรุง (patch notes)</div>
       <ul class="subtle">
+        <li>v2.9: แก้ไข Bug ฟังก์ชันปิดไมค์อัตโนมัติเมื่อพักแอป ให้ทำงานได้อย่างสมบูรณ์</li>
         <li>v2.8: แก้ปัญหา Layout 'เด้ง' โดยการล็อคความสูงขั้นต่ำของกล่อง Score Cards</li>
         <li>v2.7: ปรับลดขนาดฟอนต์ข้อความอธิบายใต้การ์ดควบคุมและ Top Score</li>
         <li>v2.6: เพิ่มฟังก์ชันปิดไมค์อัตโนมัติ หากแอปถูกพักไปเกิน 1 นาที</li>
-        <li>v2.5: ปรับปรุงป้ายสถานะ Score ให้แสดงในบรรทัดเดียวและมีสีตามระดับความรุนแรง</li>
       </ul>
     </div>
   </div>
@@ -248,39 +248,53 @@ gateDb.addEventListener('input',()=>gateDbLbl.textContent=`${gateDb.value} dBFS`
 smooth.addEventListener('input',()=>smoothLbl.textContent=Number(smooth.value).toFixed(2));
 
 /* ========= Audio + Analyser ========= */
-let ctx, analyser, dataFreq;
+let ctx, analyser, dataFreq, mediaStream; // *** MODIFIED: mediaStream is now global ***
 let running=false, rafId;
 let sampleRate=48000;
 
 async function start(){
   if(running) return;
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({audio:{
+    mediaStream = await navigator.mediaDevices.getUserMedia({audio:{ // *** MODIFIED: Assign to global stream ***
       echoCancellation:true, noiseSuppression:true, autoGainControl:false
     }});
     ctx = new (window.AudioContext||window.webkitAudioContext)();
     sampleRate = ctx.sampleRate;
-    const src = ctx.createMediaStreamSource(stream);
+    const src = ctx.createMediaStreamSource(mediaStream);
     analyser = ctx.createAnalyser();
     analyser.fftSize = 4096;
     analyser.smoothingTimeConstant = 0.8;
     src.connect(analyser);
     dataFreq = new Float32Array(analyser.frequencyBinCount);
     running=true;
+    btnStart.disabled = true;
+    btnStop.disabled = false;
     lastUi=0;
     loop();
   } catch(err) {
     console.error("Could not start audio context", err);
     alert("ไม่สามารถเริ่มการวัดเสียงได้ โปรดตรวจสอบว่าได้อนุญาตให้ใช้ไมโครโฟนแล้ว");
+    btnStart.disabled = false;
   }
 }
 
 function stop(){
   running=false;
   if(rafId) cancelAnimationFrame(rafId);
+  
+  // *** MODIFIED: Properly stop media tracks to turn off mic ***
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(track => track.stop());
+    mediaStream = null;
+  }
+  
   if(ctx) ctx.close().catch(e => console.error(e));
   ctx = null;
   analyser = null;
+
+  // *** MODIFIED: Update UI state ***
+  btnStart.disabled = false;
+  btnStop.disabled = true;
 }
 
 btnStart.onclick=start;
@@ -330,7 +344,7 @@ function parseNoteOrHz(s){
 /* ========= Main Loop ========= */
 let lastUi = 0;
 function loop(ts=performance.now()){
-  if(!running){ return; }
+  if(!running || !analyser){ return; }
   analyser.getFloatFrequencyData(dataFreq);
   const peaks = pickPeaks(dataFreq, Number(minHz.value), Number(maxHz.value));
   updateHolds(peaks, 1/30);
@@ -538,6 +552,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     visibilityTimeout = setTimeout(() => {
       if (running) {
+        console.log("Auto-stopping due to inactivity in background.");
         stop();
       }
     }, 60000); // 1 minute
