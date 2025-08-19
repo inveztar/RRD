@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง (v2.7)</title>
+<title>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง (v2.8)</title>
 <style>
   /* ---------------------------------------------------------
-     แพทหลังบ้าน (Patch Notes) - v2.7
-     - ปรับลดขนาดฟอนต์ข้อความอธิบายใต้การ์ดควบคุมและ Top Score
+     แพทหลังบ้าน (Patch Notes) - v2.8
+     - แก้ปัญหา Layout 'เด้ง' โดยการล็อคความสูงขั้นต่ำของกล่อง Score Cards
      --------------------------------------------------------- */
 
   :root{
@@ -83,12 +83,17 @@
   .title-tag.bad { background: var(--bad); color: white; }
   .title-tag.warn { background: var(--warn); color: #422006; }
   .title-tag.normal { background: #0e223d; color: #9ec3ff; }
+  
+  /* *** NEW: Lock score cards container height to prevent layout shift *** */
+  #scoreCards {
+    min-height: 135px;
+  }
 
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง <span class="pill">v2.7</span></h1>
+    <h1>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง <span class="pill">v2.8</span></h1>
 
     <!-- Controls -->
     <div class="panel row cols-2">
@@ -121,7 +126,6 @@
                 <input id="smooth" type="range" min="0.05" max="0.6" step="0.01" value="0.20" style="width: 100%;">
             </div>
         </div>
-        <!-- *** MODIFIED: Font size adjusted *** -->
         <div class="subtle foot" style="margin-top:6px">* จะนับสถิติ Top Winner เฉพาะคลื่นที่ “พีคอันดับ 1” และมีระดับสูงกว่า Gate เท่านั้น เพื่อลดสเปค/ช่วงเงียบ</div>
       </div>
 
@@ -173,7 +177,6 @@
           <tr><td>—</td><td>—</td></tr>
         </tbody>
       </table>
-      <!-- *** MODIFIED: Font size adjusted *** -->
       <div class="subtle foot" style="margin-top:8px">* Score คำนวณจาก Prominence, Hold, Count, และ Decay</div>
     </div>
 
@@ -193,10 +196,10 @@
     <div class="panel panel-2" style="margin-top:12px">
       <div class="title">บันทึกการปรับปรุง (patch notes)</div>
       <ul class="subtle">
+        <li>v2.8: แก้ปัญหา Layout 'เด้ง' โดยการล็อคความสูงขั้นต่ำของกล่อง Score Cards</li>
         <li>v2.7: ปรับลดขนาดฟอนต์ข้อความอธิบายใต้การ์ดควบคุมและ Top Score</li>
         <li>v2.6: เพิ่มฟังก์ชันปิดไมค์อัตโนมัติ หากแอปถูกพักไปเกิน 1 นาที</li>
         <li>v2.5: ปรับปรุงป้ายสถานะ Score ให้แสดงในบรรทัดเดียวและมีสีตามระดับความรุนแรง</li>
-        <li>v2.4: ปรับปรุง Layout ในส่วนควบคุมให้สมดุลและสวยงามขึ้น</li>
       </ul>
     </div>
   </div>
