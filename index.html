@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง (v2.4)</title>
+<title>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง (v2.5)</title>
 <style>
   /* ---------------------------------------------------------
-     แพทหลังบ้าน (Patch Notes) - v2.4
-     - ปรับปรุง Layout ในส่วนควบคุมให้สมดุลและสวยงามขึ้น
+     แพทหลังบ้าน (Patch Notes) - v2.5
+     - ปรับปรุงป้ายสถานะ Score ให้แสดงในบรรทัดเดียวและมีสีตามระดับความรุนแรง
      --------------------------------------------------------- */
 
   :root{
@@ -52,7 +52,6 @@
   .score-card{background:linear-gradient(180deg,#0b1425,#0b1425 70%,#0a1323); border:1px solid #1e2a43; border-radius:12px; padding:14px}
   .score-big{font-size:36px; font-weight:900}
 
-  /* ---- SCORE BAR (ปรับเป็น gradient pill ฟ้า→ชมพู + เงา) ---- */
   .score-bar{
     height:8px; border-radius:999px; background:#0f2038; position:relative; overflow:hidden;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 2px 8px rgba(0,0,0,.45);
@@ -67,23 +66,30 @@
   .muted{color:var(--muted)}
   .breakdown{font-size:13px; color:#cbd5e1}
   @media (max-width:520px){
-    .breakdown{font-size:11px}         /* เล็กลงในมือถือ */
+    .breakdown{font-size:11px}
     .note-tag.big{font-size:17px}
   }
-  /* ล็อคความสูงแถวให้คงที่ (ไม่เด้ง) */
   .fixed-rows tbody tr{height:44px}
-  /* ล็อคเสาความกว้างคงที่ ลดการขยับ */
   .w-1{width:80px} .w-2{width:120px} .w-3{width:110px} .w-4{width:90px}
-  /* ข้อความเล็กใต้การ์ด */
   .foot{font-size:12px; color:#93a4c4}
   .pill{padding:3px 8px; border-radius:999px; background:#0e223d; color:#9ec3ff}
   .row-gap{margin-top:8px}
   .right{float:right}
+
+  /* *** MODIFIED: Styles for Score Tags *** */
+  .title-tag {
+    white-space: nowrap; /* Prevent line breaks */
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .title-tag.bad { background: var(--bad); color: white; }
+  .title-tag.warn { background: var(--warn); color: #422006; }
+  .title-tag.normal { background: #0e223d; color: #9ec3ff; }
+
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง <span class="pill">v2.4</span></h1>
+    <h1>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง <span class="pill">v2.5</span></h1>
 
     <!-- Controls -->
     <div class="panel row cols-2">
@@ -97,7 +103,6 @@
 
         <div class="row-gap"></div>
 
-        <!-- *** MODIFIED: Redesigned layout for balance *** -->
         <div>
             <div class="label">ย่านตรวจ</div>
             <div style="display:grid; grid-template-columns: 1fr 20px 1fr auto; gap:8px; align-items:center">
@@ -152,7 +157,7 @@
       </table>
     </div>
 
-    <!-- Top Scores Table (Replaces Top Winners) -->
+    <!-- Top Scores Table -->
     <div class="panel" style="margin-top:12px">
       <div class="title">อันดับคะแนนสูงสุด (Top Score)</div>
       <table class="fixed-rows">
@@ -187,11 +192,10 @@
     <div class="panel panel-2" style="margin-top:12px">
       <div class="title">บันทึกการปรับปรุง (patch notes)</div>
       <ul class="subtle">
+        <li>v2.5: ปรับปรุงป้ายสถานะ Score ให้แสดงในบรรทัดเดียวและมีสีตามระดับความรุนแรง</li>
         <li>v2.4: ปรับปรุง Layout ในส่วนควบคุมให้สมดุลและสวยงามขึ้น</li>
         <li>v2.3: ปรับขนาดกล่อง input, ย้ายตาราง Top Score, ปรับปรุงชื่อการ์ด</li>
-        <li>v2.2.1: ปรับ Score bar เป็นแคปซูลไล่สีฟ้า→ชมพู พร้อมเงาเรือง (UI เท่านั้น)</li>
-        <li>v2.2: ทำ UI สมูธขึ้น, ล็อคความสูงแถวตาราง, ย่อ/ขยายฟอนต์, แสดงชื่อโน้ตใน Top Winners</li>
-        <li>v2.2: นับสถิติ Top Winner เฉพาะเมื่อระดับสูงกว่า Gate และกันเด้งด้วยการ debounced ~0.4s</li>
+        <li>v2.2.1: ปรับ Score bar เป็นแคปซูลไล่สีฟ้า→ชมพู พร้อมเงาเรือง</li>
       </ul>
     </div>
   </div>
@@ -206,7 +210,7 @@ function hzToNoteName(freq){
   const A4=440;
   const n = Math.round(12*Math.log2(freq/A4));
   const noteNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-  const idx = (n+9+1200)%12; // shift so that n=0 -> A
+  const idx = (n+9+1200)%12;
   const midi = 69 + n;
   const octave = Math.floor((midi/12)-1);
   const name = noteNames[idx];
@@ -222,20 +226,15 @@ function fmt(n,dp=1){
 const btnStart = document.getElementById('btnStart');
 const btnStop  = document.getElementById('btnStop');
 const btnClear = document.getElementById('btnClear');
-
 const minHz = document.getElementById('minHz');
 const maxHz = document.getElementById('maxHz');
-
 const gateDb = document.getElementById('gateDb');
 const gateDbLbl = document.getElementById('gateDbLbl');
-
 const smooth = document.getElementById('smooth');
 const smoothLbl = document.getElementById('smoothLbl');
-
 const peaksNowTbody = document.getElementById('peaksNow');
-const topScoresTbody = document.getElementById('topScores'); // Changed from winnersTbody
+const topScoresTbody = document.getElementById('topScores');
 const scoreCardsEl = document.getElementById('scoreCards');
-
 const watchInput = document.getElementById('watchInput');
 const watchListEl = document.getElementById('watchList');
 const btnWatchAdd = document.getElementById('btnWatchAdd');
@@ -290,11 +289,10 @@ const decayByHz = new Map();
 const promSmoothByHz = new Map();
 const scoreSmoothByHz = new Map();
 const countByHz = new Map();
-
 let lastWinnerHz=null;
 let lastWinTime=0;
-
 const watchset = new Set();
+
 btnWatchAdd.onclick=()=>{
   const v = (watchInput.value||"").trim();
   if(!v) return;
@@ -305,6 +303,7 @@ btnWatchAdd.onclick=()=>{
   watchInput.value="";
 };
 btnWatchClear.onclick=()=>{watchset.clear(); renderWatchlist();};
+
 function renderWatchlist(){
   if(!watchset.size){watchListEl.textContent="—"; return;}
   const arr=[...watchset].sort((a,b)=>a-b).map(h=>`${h} (${hzToNoteName(h)})`);
@@ -329,10 +328,8 @@ let lastUi = 0;
 function loop(ts=performance.now()){
   if(!running){ return; }
   analyser.getFloatFrequencyData(dataFreq);
-
   const peaks = pickPeaks(dataFreq, Number(minHz.value), Number(maxHz.value));
   updateHolds(peaks, 1/30);
-
   const top = peaks[0];
   if(top && top.levelDb >= Number(gateDb.value)){
     const now = performance.now();
@@ -342,7 +339,6 @@ function loop(ts=performance.now()){
       countByHz.set(rHz, (countByHz.get(rHz)||0)+1);
     }
   }
-
   if(ts - lastUi > 100){
     lastUi = ts;
     const scores = calculateScores();
@@ -350,7 +346,6 @@ function loop(ts=performance.now()){
     renderTopScores(scores);
     renderScoreCards(scores);
   }
-
   rafId = requestAnimationFrame(loop);
 }
 
@@ -361,7 +356,6 @@ function pickPeaks(spectrum, min, max){
   const minBin = Math.max(1, Math.floor(min/binHz));
   const maxBin = Math.min(spectrum.length-2, Math.ceil(max/binHz));
   const gate = Number(gateDb.value);
-
   const arr=[];
   for(let i=minBin;i<=maxBin;i++){
     const L=spectrum[i-1], C=spectrum[i], R=spectrum[i+1];
@@ -407,19 +401,15 @@ function updateHolds(peaks, dt){
 /* ========= Score Calculation ========= */
 function calculateScores() {
     if (!running || !analyser || !dataFreq) return [];
-
     const candidates = new Map();
     for(const [h,c] of countByHz) candidates.set(h,{hz:h,count:c});
-
     const latest = pickPeaks(dataFreq, Number(minHz.value), Number(maxHz.value));
     latest.forEach(p=>{
       const r = Math.round(p.hz);
       if(!candidates.has(r)) candidates.set(r,{hz:r,count:0});
     });
-
     let maxCnt=1;
     for(const v of candidates.values()) maxCnt=Math.max(maxCnt, v.count);
-
     const list=[];
     for(const v of candidates.values()){
       const h=v.hz;
@@ -435,17 +425,14 @@ function calculateScores() {
       scoreSmoothByHz.set(h, sm);
       list.push({hz:h, score:sm, p:prom, h:hold, c:cnt, d:(1-de)});
     }
-
     list.sort((a,b)=>b.score-a.score);
     return list.slice(0,3);
 }
-
 
 /* ========= Rendering ========= */
 function renderPeaks(peaks){
   const rows = peaksNowTbody.querySelectorAll('tr');
   const alpha = Number(smooth.value);
-
   for(let r=0;r<3;r++){
     const row = rows[r];
     const p = peaks[r];
@@ -458,7 +445,6 @@ function renderPeaks(peaks){
     const prevProm = promSmoothByHz.get(k) ?? p.prom;
     const smProm = lerp(prevProm, p.prom, alpha);
     promSmoothByHz.set(k, smProm);
-
     row.children[0].innerHTML = `${hz} <span class="note-tag">${hzToNoteName(hz)}</span>`;
     row.children[1].textContent = fmt(p.levelDb,1);
     row.children[2].textContent = fmt(smProm,1);
@@ -489,7 +475,6 @@ function renderScoreCards(scores){
     scoreCardsEl.dataset.ready="1";
   }
   const cards = scoreCardsEl.querySelectorAll('.score-card');
-
   scores.forEach((it,idx)=>{
     const card = cards[idx];
     const note = hzToNoteName(it.hz);
@@ -500,16 +485,19 @@ function renderScoreCards(scores){
     const bd = card.querySelector('.breakdown');
     bd.textContent = `P:${fmt(it.p*100,0)}% · H:${fmt(it.h*100,0)}% · C:${fmt(it.c*100,0)}% · D:${fmt(it.d*100,0)}%`;
     const tag = card.querySelector('.title-tag');
-    tag.textContent = labelFromScore(it.score);
+    const labelInfo = labelFromScore(it.score); // *** MODIFIED ***
+    tag.textContent = labelInfo.text;
+    tag.className = 'title-tag pill ' + labelInfo.className;
   });
-
   for(let i=scores.length;i<3;i++){
     const card = cards[i];
     card.querySelector('.hz').innerHTML = `—`;
     card.querySelector('.score-val').textContent = `—`;
     card.querySelector('.score-bar > i').style.inset = `0 100% 0 0`;
     card.querySelector('.breakdown').textContent = `—`;
-    card.querySelector('.title-tag').textContent = '';
+    const tag = card.querySelector('.title-tag'); // *** MODIFIED ***
+    tag.textContent = '';
+    tag.className = 'title-tag pill normal';
   }
 }
 function scoreCardTpl(){
@@ -526,10 +514,11 @@ function scoreCardTpl(){
   `;
   return d;
 }
+// *** MODIFIED: Function now returns object with text and class ***
 function labelFromScore(s){
-  if(s>=0.70) return "เรโซแนนซ์";
-  if(s>=0.45) return "น่าสงสัย";
-  return "เฝ้าดูต่อ";
+  if(s>=0.70) return { text: "เรโซแนนซ์", className: "bad" };
+  if(s>=0.45) return { text: "น่าสงสัย", className: "warn" };
+  return { text: "เฝ้าดูต่อ", className: "normal" };
 }
 
 /* ========= Clear ========= */
