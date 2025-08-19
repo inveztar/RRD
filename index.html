@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง (v2.5)</title>
+<title>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง (v2.7)</title>
 <style>
   /* ---------------------------------------------------------
-     แพทหลังบ้าน (Patch Notes) - v2.5
-     - ปรับปรุงป้ายสถานะ Score ให้แสดงในบรรทัดเดียวและมีสีตามระดับความรุนแรง
+     แพทหลังบ้าน (Patch Notes) - v2.7
+     - ปรับลดขนาดฟอนต์ข้อความอธิบายใต้การ์ดควบคุมและ Top Score
      --------------------------------------------------------- */
 
   :root{
@@ -76,9 +76,8 @@
   .row-gap{margin-top:8px}
   .right{float:right}
 
-  /* *** MODIFIED: Styles for Score Tags *** */
   .title-tag {
-    white-space: nowrap; /* Prevent line breaks */
+    white-space: nowrap;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
   .title-tag.bad { background: var(--bad); color: white; }
@@ -89,7 +88,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง <span class="pill">v2.5</span></h1>
+    <h1>Resonance Watch — หาเรโซแนนซ์จากไมค์จริง <span class="pill">v2.7</span></h1>
 
     <!-- Controls -->
     <div class="panel row cols-2">
@@ -122,7 +121,8 @@
                 <input id="smooth" type="range" min="0.05" max="0.6" step="0.01" value="0.20" style="width: 100%;">
             </div>
         </div>
-        <div class="subtle" style="margin-top:6px">* จะนับสถิติ Top Winner เฉพาะคลื่นที่ “พีคอันดับ 1” และมีระดับสูงกว่า Gate เท่านั้น เพื่อลดสเปค/ช่วงเงียบ</div>
+        <!-- *** MODIFIED: Font size adjusted *** -->
+        <div class="subtle foot" style="margin-top:6px">* จะนับสถิติ Top Winner เฉพาะคลื่นที่ “พีคอันดับ 1” และมีระดับสูงกว่า Gate เท่านั้น เพื่อลดสเปค/ช่วงเงียบ</div>
       </div>
 
       <div class="row">
@@ -173,7 +173,8 @@
           <tr><td>—</td><td>—</td></tr>
         </tbody>
       </table>
-      <div class="subtle" style="margin-top:8px">* Score คำนวณจาก Prominence, Hold, Count, และ Decay</div>
+      <!-- *** MODIFIED: Font size adjusted *** -->
+      <div class="subtle foot" style="margin-top:8px">* Score คำนวณจาก Prominence, Hold, Count, และ Decay</div>
     </div>
 
     <!-- Scores Breakdown -->
@@ -192,10 +193,10 @@
     <div class="panel panel-2" style="margin-top:12px">
       <div class="title">บันทึกการปรับปรุง (patch notes)</div>
       <ul class="subtle">
+        <li>v2.7: ปรับลดขนาดฟอนต์ข้อความอธิบายใต้การ์ดควบคุมและ Top Score</li>
+        <li>v2.6: เพิ่มฟังก์ชันปิดไมค์อัตโนมัติ หากแอปถูกพักไปเกิน 1 นาที</li>
         <li>v2.5: ปรับปรุงป้ายสถานะ Score ให้แสดงในบรรทัดเดียวและมีสีตามระดับความรุนแรง</li>
         <li>v2.4: ปรับปรุง Layout ในส่วนควบคุมให้สมดุลและสวยงามขึ้น</li>
-        <li>v2.3: ปรับขนาดกล่อง input, ย้ายตาราง Top Score, ปรับปรุงชื่อการ์ด</li>
-        <li>v2.2.1: ปรับ Score bar เป็นแคปซูลไล่สีฟ้า→ชมพู พร้อมเงาเรือง</li>
       </ul>
     </div>
   </div>
@@ -485,7 +486,7 @@ function renderScoreCards(scores){
     const bd = card.querySelector('.breakdown');
     bd.textContent = `P:${fmt(it.p*100,0)}% · H:${fmt(it.h*100,0)}% · C:${fmt(it.c*100,0)}% · D:${fmt(it.d*100,0)}%`;
     const tag = card.querySelector('.title-tag');
-    const labelInfo = labelFromScore(it.score); // *** MODIFIED ***
+    const labelInfo = labelFromScore(it.score);
     tag.textContent = labelInfo.text;
     tag.className = 'title-tag pill ' + labelInfo.className;
   });
@@ -495,7 +496,7 @@ function renderScoreCards(scores){
     card.querySelector('.score-val').textContent = `—`;
     card.querySelector('.score-bar > i').style.inset = `0 100% 0 0`;
     card.querySelector('.breakdown').textContent = `—`;
-    const tag = card.querySelector('.title-tag'); // *** MODIFIED ***
+    const tag = card.querySelector('.title-tag');
     tag.textContent = '';
     tag.className = 'title-tag pill normal';
   }
@@ -514,7 +515,6 @@ function scoreCardTpl(){
   `;
   return d;
 }
-// *** MODIFIED: Function now returns object with text and class ***
 function labelFromScore(s){
   if(s>=0.70) return { text: "เรโซแนนซ์", className: "bad" };
   if(s>=0.45) return { text: "น่าสงสัย", className: "warn" };
@@ -528,6 +528,21 @@ function resetStats(){
   renderScoreCards([]);
   renderPeaks([]);
 }
+
+/* ========= Auto-Stop on Background ========= */
+let visibilityTimeout;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    visibilityTimeout = setTimeout(() => {
+      if (running) {
+        stop();
+      }
+    }, 60000); // 1 minute
+  } else {
+    clearTimeout(visibilityTimeout);
+  }
+});
+
 
 /* ========= Kick off ========= */
 renderWatchlist();
